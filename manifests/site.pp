@@ -27,7 +27,7 @@ File {
 node logserver {
 
   ## Sets some custom parameters
-  $hostaddress       = '192.168.33.7'                # Ip set in vagrant (maybe set by facter as well)
+  $hostaddress       = $logserver_ipaddress          # Ip set in vagrant
   $java_package      = 'openjdk-7-jre-headless'      # Java package
   $elasticsearch_deb = 'elasticsearch-0.90.1.deb'    # Elasticsearch package
   $logstash_jar      = 'logstash-1.1.13-flatjar.jar' # Logstash library
@@ -52,7 +52,8 @@ node logserver {
   
   # Gets the Java runtime
   package { "${java_package}":
-    ensure  => present
+    ensure  => present,
+    require => Anchor [ "apt::ppa::ppa:webupd8team/java" ]
   }
     
   ## Elasticsearch ##
@@ -109,7 +110,8 @@ node logserver {
     ensure   => present,
     #proxy  => 'http://logserver.blog.fr',
     www_root => '/var/www',
-    require => File['/var/www']
+    require => File['/var/www'],
+    notify  => Service['nginx']
   }
     
   # Creates a proxy for elasticsearch
