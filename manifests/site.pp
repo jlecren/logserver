@@ -31,6 +31,8 @@ node logserver {
   $java_package      = 'openjdk-7-jre-headless'      # Java package
   $elasticsearch_deb = 'elasticsearch-0.90.1.deb'    # Elasticsearch package
   $logstash_jar      = 'logstash-1.1.13-flatjar.jar' # Logstash library
+  $kibana_tag        = 'v3.0.0milestone2'
+  $kibana_folder     = regsubst("kibana-$kibana_tag", '-v', '-')
 
   ## Configures APT ##
   
@@ -124,8 +126,8 @@ node logserver {
     
   # Downloads kibana
   wget::fetch { 'download:kibana':
-    source      => "https://github.com/elasticsearch/kibana/archive/master.tar.gz",
-    destination => "/tmp/master.tar.gz",
+    source      => "https://github.com/elasticsearch/kibana/archive/${kibana_tag}.tar.gz",
+    destination => "/tmp/${kibana_tag}.tar.gz",
     timeout     => 0,
     verbose     => true,
   }
@@ -137,20 +139,20 @@ node logserver {
   }
     
   # Unpacks the archive
-  archive { '/tmp/master.tar.gz':
+  archive { "/tmp/${kibana_tag}.tar.gz":
     ensure => unpacked,
     compression => 'gz',
     source => [],
     cwd => '/opt/kibana',
-    creates => '/opt/kibana/master.tar.gz.unpacked',
+    creates => "/opt/kibana/${kibana_tag}.tar.gz.unpacked",
     require => [ File['/opt/kibana'], Exec['wget-download:kibana'] ]
   }
     
   # Creates a link 'kibana' on the folder previously unpacked archive
   file { '/var/www/kibana':
     ensure => link,
-    target => '/opt/kibana/kibana-master',
-    require => Archive['/tmp/master.tar.gz']
+    target => "/opt/kibana/${kibana_folder}",
+    require => Archive["/tmp/${kibana_tag}.tar.gz"]
   }
     
   ## Redis ##
