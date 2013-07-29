@@ -113,7 +113,8 @@ node logserver {
     #proxy  => 'http://logserver.blog.fr',
     www_root => '/var/www',
     require => File['/var/www'],
-    notify  => Service['nginx']
+    notify  => Service['nginx'],
+    try_files => ['$uri', '$uri/']
   }
     
   # Creates a proxy for elasticsearch
